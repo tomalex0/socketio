@@ -1,0 +1,10 @@
+{
+    "name": "socketio",
+    "version": "0.1.0",
+    "dependencies": {
+		"express": "~3.16.1",
+        "socket.io":"1.2.0",
+        "cookie" : "*",
+        "cookie-parser" : "*"
+    }
+}
