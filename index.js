@@ -49,32 +49,56 @@ var server = https.createServer(options, app).listen(8443, function(){
 
 var socketio = require('socket.io').listen(server);
 
-socketio.set('authorization',function(data, accept){
-
-    if (data.headers.cookie) {
-        data.cookie = parseCookie(data.headers.cookie);
-        data.sessionID = cookieParser.signedCookie(data.cookie['express.sid'], secretStr);
-        // save the session store to the data object
-        // (as required by the Session constructor)
-        data.sessionStore = sessionStore;
-        sessionStore.get(data.sessionID, function (err, session) {
-            console.log(session,'session');
-            if (err || !session) {
-                accept('Error', false);
-            } else {
-                // create a session object, passing data as request and our
-                // just acquired session data
-                //data.session = sessionStore(data, session);
-                accept(null, true);
-            }
-        });
-    } else {
-        return accept('No cookie transmitted.', false);
-    }
-});
+//socketio.set('authorization',function(data, accept){
+//
+//    if (data.headers.cookie) {
+//        data.cookie = parseCookie(data.headers.cookie);
+//        data.sessionID = cookieParser.signedCookie(data.cookie['express.sid'], secretStr);
+//        // save the session store to the data object
+//        // (as required by the Session constructor)
+//        data.sessionStore = sessionStore;
+//        sessionStore.get(data.sessionID, function (err, session) {
+//            console.log(session,'session');
+//            if (err || !session) {
+//                accept('Error', false);
+//            } else {
+//                // create a session object, passing data as request and our
+//                // just acquired session data
+//                //data.session = sessionStore(data, session);
+//                accept(null, true);
+//            }
+//        });
+//    } else {
+//        return accept('No cookie transmitted.', false);
+//    }
+//});
 
 socketio
     .of('/socketspace')
+    .use(function(data, accept){
+        console.log(data.request.headers,'data');
+        data =  data.request;
+        if (data.headers.cookie) {
+            data.cookie = parseCookie(data.headers.cookie);
+            data.sessionID = cookieParser.signedCookie(data.cookie['express.sid'], secretStr);
+            // save the session store to the data object
+            // (as required by the Session constructor)
+            data.sessionStore = sessionStore;
+            sessionStore.get(data.sessionID, function (err, session) {
+                console.log(session,'session');
+                if (err || !session) {
+                    accept('Error', false);
+                } else {
+                    // create a session object, passing data as request and our
+                    // just acquired session data
+                    //data.session = sessionStore(data, session);
+                    accept(null, true);
+                }
+            });
+        } else {
+            return accept('No cookie transmitted.', false);
+        }
+    })
     .on('connection', function(socket) {
         console.log(socket.id, 'socket io connect callback');
         socket.on('disconnect', function (a) {
